@@ -52,6 +52,9 @@ app.use("/app/v1", CategoryRoute);
 app.use("/app/v1", ArticleRoute);
 
 
+app.get("/",(req,res)=>{
+    res.status(200).send("Backend Data")
+})
 
 
 
