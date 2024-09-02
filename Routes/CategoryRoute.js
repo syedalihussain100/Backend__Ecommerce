@@ -5,7 +5,7 @@ const {
     deleteCategory,
     getCategory,
     getallCategory,
-} = require("../controller/CategoryController");
+} = require("../Controller/CategoryController");
 const router = express.Router();
 const { checkRole, verifyToken } = require("../middleware/authMiddleware");
 
