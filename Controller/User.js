@@ -183,11 +183,10 @@ const updatedUser = asyncHandler(async (req, res) => {
                     }
                 );
 
-                stream.end(file.buffer); // Send the buffer to the stream
+                stream.end(file.buffer); 
             });
 
-            imageUrl = result.secure_url; // Get the URL from the uploaded image
-            // console.log("cloud upload", result); // Log the result object
+            imageUrl = result.secure_url; 
         }
 
         if (!name) {
@@ -210,6 +209,7 @@ const updatedUser = asyncHandler(async (req, res) => {
 
         res.status(200).json({ message: "User has been updated", user: updatedUser });
     } catch (error) {
+        console.log("error",error.message)
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
