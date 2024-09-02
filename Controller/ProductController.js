@@ -204,8 +204,85 @@ const deleteProduct = asyncHandler(async (req, res) => {
 // create rating 
 
 
+// const rating = asyncHandler(async (req, res) => {
+//     const userId = req.user.id;
+//     const { star, id, comment, type } = req.body;
+
+//     try {
+//         let model;
+
+//         if (type === "product") {
+//             model = productModel;
+//         } else if (type === "article") {
+//             model = articleModel;
+//         } else {
+//             return res.status(400).json({ message: 'Invalid type provided' });
+//         }
+
+//         const item = await model.findById(id);
+//         if (!item) {
+//             return res.status(404).json({ message: `${type} not found` });
+//         }
+
+//         if (!item.ratings || item.ratings.length === 0) {
+//             item.ratings = [];
+//         }
+
+//         let alreadyRated = item.ratings.find(
+//             (rating) => rating.postedby && rating.postedby.toString() === userId.toString()
+//         );
+
+//         if (alreadyRated) {
+//             await model.updateOne(
+//                 {
+//                     _id: id,
+//                     "ratings._id": alreadyRated._id,
+//                 },
+//                 {
+//                     $set: { "ratings.$.star": star, "ratings.$.comment": comment },
+//                 },
+//                 { new: true }
+//             );
+//         } else {
+//             await model.findByIdAndUpdate(
+//                 id,
+//                 {
+//                     $push: {
+//                         ratings: {
+//                             star: star,
+//                             comment: comment,
+//                             postedby: req.user.id,
+//                         },
+//                     },
+//                 },
+//                 { new: true }
+//             );
+//         }
+
+//         const updatedItem = await model.findById(id)
+//             .populate('ratings.postedby', 'name email image');
+
+//         const ratingSum = updatedItem.ratings
+//             .map((item) => item.star)
+//             .reduce((prev, curr) => prev + curr, 0);
+
+//         const finalItem = await model.findByIdAndUpdate(
+//             id,
+//             {
+//                 totalrating: ratingSum.toString(),
+//             },
+//             { new: true }
+//         ).populate('ratings.postedby', 'name email image');
+
+//         res.json(finalItem);
+//     } catch (error) {
+//         console.log("error ==>", error.message);
+//         res.status(500).json({ message: 'An unexpected error occurred' });
+//     }
+// });
+
 const rating = asyncHandler(async (req, res) => {
-    const { _id } = req.user;
+    const userId = req.user.id;
     const { star, id, comment, type } = req.body;
 
     try {
@@ -224,40 +301,20 @@ const rating = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: `${type} not found` });
         }
 
-        if (!item.ratings || item.ratings.length === 0) {
-            item.ratings = [];
-        }
-
-        let alreadyRated = item.ratings.find(
-            (rating) => rating.postedby && rating.postedby.toString() === _id.toString()
-        );
-
-        if (alreadyRated) {
-            await model.updateOne(
-                {
-                    _id: id,
-                    "ratings._id": alreadyRated._id,
-                },
-                {
-                    $set: { "ratings.$.star": star, "ratings.$.comment": comment },
-                },
-                { new: true }
-            );
-        } else {
-            await model.findByIdAndUpdate(
-                id,
-                {
-                    $push: {
-                        ratings: {
-                            star: star,
-                            comment: comment,
-                            postedby: req.user.id,
-                        },
+        // Always push a new rating, allowing multiple ratings from the same user
+        await model.findByIdAndUpdate(
+            id,
+            {
+                $push: {
+                    ratings: {
+                        star: star,
+                        comment: comment,
+                        postedby: userId,
                     },
                 },
-                { new: true }
-            );
-        }
+            },
+            { new: true }
+        );
 
         const updatedItem = await model.findById(id)
             .populate('ratings.postedby', 'name email image');
@@ -281,9 +338,52 @@ const rating = asyncHandler(async (req, res) => {
     }
 });
 
+
 // get all rating
+// const getRating = asyncHandler(async (req, res) => {
+//     const { id } = req.user;
+//     const { Id, type } = req.body;
+
+//     try {
+//         let model;
+
+//         if (type === "product") {
+//             model = productModel;
+//         } else if (type === "article") {
+//             model = articleModel;
+//         } else {
+//             return res.status(400).json({ message: 'Invalid type provided' });
+//         }
+
+//         const item = await model.findById(Id).populate('ratings.postedby', 'name email image');
+//         if (!item) {
+//             return res.status(404).json({ message: `${type} not found` });
+//         }
+
+//         // // Safely find the rating by the current user
+//         const userRating = item.ratings.find(
+//             (rating) => rating?.postedby?._id?.toString() === id.toString()
+//         );
+
+
+//         if (!userRating) {
+//             return res.status(404).json({ message: 'User rating not found' });
+//         }
+
+//         res.json({
+//             userRating: {
+//                 star: userRating.star,
+//                 comment: userRating.comment,
+//                 postedby: userRating.postedby,
+//             }
+//         });
+//     } catch (error) {
+//         res.status(500).json({ message: 'An unexpected error occurred' });
+//     }
+// });
+
+
 const getRating = asyncHandler(async (req, res) => {
-    const { id } = req.user;
     const { Id, type } = req.body;
 
     try {
@@ -302,22 +402,13 @@ const getRating = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: `${type} not found` });
         }
 
-        // // Safely find the rating by the current user
-        const userRating = item.ratings.find(
-            (rating) => rating?.postedby?._id?.toString() === id.toString()
-        );
-
-
-        if (!userRating) {
-            return res.status(404).json({ message: 'User rating not found' });
-        }
-
+        // Return all ratings for the item
         res.json({
-            userRating: {
-                star: userRating.star,
-                comment: userRating.comment,
-                postedby: userRating.postedby,
-            }
+            ratings: item.ratings.map(rating => ({
+                star: rating.star,
+                comment: rating.comment,
+                postedby: rating.postedby,
+            }))
         });
     } catch (error) {
         res.status(500).json({ message: 'An unexpected error occurred' });
