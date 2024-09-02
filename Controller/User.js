@@ -161,51 +161,6 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 // update user
 
-// const updatedUser = asyncHandler(async (req, res) => {
-//     const { id } = req.user;
-//     const { name } = req.body;
-
-//     try {
-//         const uploader = (path) => cloudinaryUploadImg(path, 'image');
-//         let imageUrl = null;
-//         const files = req.file;
-//         console.log("file check", files)
-//         const newPath = await uploader(files.originalname);
-//         console.log("cloud upload",newPath)
-
-//         // if (files && files.length > 0) {
-//         //     const { path } = files[0];
-//         //     console.log("pathetsting",path)
-//         //     const newpath = await uploader(path);
-//         //     imageUrl = newpath.url;
-//         //     fs.unlinkSync(path);
-//         // }
-
-//         if (!name) {
-//             return res.status(400).json({ message: "Name is required" });
-//         }
-
-//         const user = await User.findById(id);
-
-//         const updatedUser = await User.findByIdAndUpdate(
-//             id,
-//             {
-//                 name: name,
-//                 image: imageUrl || user.image,
-//             },
-//             {
-//                 new: true,
-//                 select: "-password"
-//             }
-//         );
-
-//         res.status(200).json({ message: "User has been updated", user: updatedUser });
-//     } catch (error) {
-//         console.log("Error updating user:", error.message);
-//         res.status(500).json({ message: 'An unexpected error occurred' });
-//     }
-// });
-
 const updatedUser = asyncHandler(async (req, res) => {
     const { id } = req.user;
     const { name } = req.body;

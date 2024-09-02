@@ -63,46 +63,6 @@ const createProduct = asyncHandler(async (req, res) => {
 // get alls products
 
 
-// const GetProduct = asyncHandler(async (req, res) => {
-//     try {
-//         const { title } = req.query;
-
-//         let query = {};
-
-//         if (title) {
-//             query.title = { $regex: `^${title}$`, $options: 'i' };
-//         }
-
-//         if (Object.keys(query).length === 0) {
-//             const products = await productModel.find();
-//             return res.status(200).json({
-//                 status: 'success',
-//                 results: products.length,
-//                 data: products,
-//             });
-//         }
-
-//         const products = await productModel.find(query);
-
-//         if (products.length === 0) {
-//             return res.status(400).json({
-//                 status: 'Fail',
-//                 results: 0,
-//                 message: 'No Data Found',
-//                 data: [],
-//             });
-//         }
-
-//         res.status(200).json({
-//             status: 'success',
-//             results: products.length,
-//             data: products,
-//         });
-//     } catch (error) {
-//         res.status(500).json({ message: 'An unexpected error occurred' });
-//     }
-// });
-
 const GetProduct = asyncHandler(async (req, res) => {
     try {
         const { title, category, minPrice, maxPrice, sort } = req.query;
@@ -187,7 +147,6 @@ const GetProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
-
 
 
 // per id product here
@@ -322,8 +281,51 @@ const rating = asyncHandler(async (req, res) => {
     }
 });
 
+// get all rating
+const getRating = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    const { Id, type } = req.body;
+
+    try {
+        let model;
+
+        if (type === "product") {
+            model = productModel;
+        } else if (type === "article") {
+            model = articleModel;
+        } else {
+            return res.status(400).json({ message: 'Invalid type provided' });
+        }
+
+        const item = await model.findById(Id).populate('ratings.postedby', 'name email image');
+        if (!item) {
+            return res.status(404).json({ message: `${type} not found` });
+        }
+
+        // // Safely find the rating by the current user
+        const userRating = item.ratings.find(
+            (rating) => rating?.postedby?._id?.toString() === id.toString()
+        );
+
+
+        if (!userRating) {
+            return res.status(404).json({ message: 'User rating not found' });
+        }
+
+        res.json({
+            userRating: {
+                star: userRating.star,
+                comment: userRating.comment,
+                postedby: userRating.postedby,
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+});
 
 
 
 
-module.exports = { createProduct, GetProduct, IdProducts, updateProduct, deleteProduct, rating }
+
+module.exports = { createProduct, GetProduct, IdProducts, updateProduct, deleteProduct, rating, getRating }
