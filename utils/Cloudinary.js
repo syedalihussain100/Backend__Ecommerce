@@ -1,4 +1,3 @@
-
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -15,7 +14,7 @@ const cloudinaryUploadImg = (fileToUpload) => {
                 reject(error);
             } else {
                 resolve({                                                                                       
-                    url: result.secure_url, // Changed 'res' to 'result.secure_url'
+                    url: result.secure_url, 
                     asset_id: result.asset_id,
                     public_id: result.public_id,
                 }); 

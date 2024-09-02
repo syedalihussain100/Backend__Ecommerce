@@ -1,3 +1,4 @@
+
 const multer = require("multer");
 const sharp = require("sharp");
 const path = require("path");
@@ -43,5 +44,35 @@ const productImgResize = async (req, res, next) => {
     next();
 };
 
+const articleImgResize = async (req, res, next) => {
+    if (!req.files) return next();
+    await Promise.all(
+        req.files.map(async (file) => {
+            await sharp(file.path)
+                .resize(300, 300)
+                .toFormat("jpeg")
+                .jpeg({ quality: 90 })
+                .toFile(`public/images/article/${file.filename}`);
+            // fs.unlinkSync(`public/images/products/${file.filename}`);
+        })
+    );
+    next();
+};
 
-module.exports = { uploadPhoto, productImgResize };
+const userImgResize = async (req, res, next) => {
+    if (!req.files) return next();
+    await Promise.all(
+        req.files.map(async (file) => {
+            await sharp(file.path)
+                .resize(300, 300)
+                .toFormat("jpeg")
+                .jpeg({ quality: 90 })
+                .toFile(`public/images/photo/${file.filename}`);
+            // fs.unlinkSync(`public/images/products/${file.filename}`);
+        })
+    );
+    next();
+};
+
+
+module.exports = { uploadPhoto, productImgResize, articleImgResize, userImgResize };

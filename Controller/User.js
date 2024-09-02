@@ -8,6 +8,13 @@ const Order = require("../models/Order")
 const { productModel } = require("../models/Product")
 const uniqid = require("uniqid");
 const Cart = require("../models/Cart");
+const { articleModel } = require("../models/Article");
+const cloudinary = require("cloudinary").v2;
+const {
+    cloudinaryUploadImg,
+    cloudinaryDeleteImg,
+} = require("../utils/Cloudinary");
+const fs = require("fs");
 
 // register
 const CreateUser = asyncHandler(async (req, res) => {
@@ -43,7 +50,7 @@ const login = asyncHandler(async (req, res, next) => {
             }
 
             // Generate a JWT
-            const token = jwt.sign({ id: user._id, role: user.role }, '123456789abc12345', { expiresIn: '1h' });
+            const token = jwt.sign({ id: user._id, role: user.role }, '123456789abc12345', { expiresIn: '7d' });
             return res.json({ message: 'Logged in successfully', token, user });
         });
     })(req, res, next);
@@ -152,33 +159,110 @@ const getAllUsers = asyncHandler(async (req, res) => {
     }
 })
 
-
 // update user
+
+// const updatedUser = asyncHandler(async (req, res) => {
+//     const { id } = req.user;
+//     const { name } = req.body;
+
+//     try {
+//         const uploader = (path) => cloudinaryUploadImg(path, 'image');
+//         let imageUrl = null;
+//         const files = req.file;
+//         console.log("file check", files)
+//         const newPath = await uploader(files.originalname);
+//         console.log("cloud upload",newPath)
+
+//         // if (files && files.length > 0) {
+//         //     const { path } = files[0];
+//         //     console.log("pathetsting",path)
+//         //     const newpath = await uploader(path);
+//         //     imageUrl = newpath.url;
+//         //     fs.unlinkSync(path);
+//         // }
+
+//         if (!name) {
+//             return res.status(400).json({ message: "Name is required" });
+//         }
+
+//         const user = await User.findById(id);
+
+//         const updatedUser = await User.findByIdAndUpdate(
+//             id,
+//             {
+//                 name: name,
+//                 image: imageUrl || user.image,
+//             },
+//             {
+//                 new: true,
+//                 select: "-password"
+//             }
+//         );
+
+//         res.status(200).json({ message: "User has been updated", user: updatedUser });
+//     } catch (error) {
+//         console.log("Error updating user:", error.message);
+//         res.status(500).json({ message: 'An unexpected error occurred' });
+//     }
+// });
 
 const updatedUser = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    const { name, email } = req.body;
+    const { name } = req.body;
 
     try {
+        let imageUrl = null;
+        const file = req.file;
 
-        if (!name && !email) {
-            return res.status(400).send({ message: "All Field Required" })
+        if (file) {
+            // Use upload_stream directly and handle the stream properly
+            const result = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'image' },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    }
+                );
+
+                stream.end(file.buffer); // Send the buffer to the stream
+            });
+
+            imageUrl = result.secure_url; // Get the URL from the uploaded image
+            // console.log("cloud upload", result); // Log the result object
         }
+
+        if (!name) {
+            return res.status(400).json({ message: "Name is required" });
+        }
+
+        const user = await User.findById(id);
+
         const updatedUser = await User.findByIdAndUpdate(
             id,
             {
                 name: name,
-                email: email,
+                image: imageUrl || user.image,
             },
             {
                 new: true,
+                select: "-password"
             }
-        ).select("-password");
-        res.status(200).send({ message: "User has been Updated", updatedUser });
+        );
+
+        res.status(200).json({ message: "User has been updated", user: updatedUser });
     } catch (error) {
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
+
+
+
+
 
 
 // delete user
@@ -219,76 +303,96 @@ const userDetailsCtl = asyncHandler(async (req, res) => {
 });
 
 
-
 // user cart
+
 const userCart = asyncHandler(async (req, res) => {
     const { cart } = req.body;
     const { id } = req.user;
 
     try {
-        let products = [];
         const user = await User.findById(id);
         const alreadyExistCart = await Cart.findOne({ orderby: user.id });
+
         if (alreadyExistCart) {
-            await alreadyExistCart.deleteOne();
+            return res.status(400).json({ message: 'Your cart already exists' });
         }
+
+        let cartItems = [];
 
         for (let i = 0; i < cart?.length; i++) {
             console.log("cart item:", cart[i]);
 
             let object = {};
-            object.product = cart[i].product;
-            object.count = cart[i].count;
+            const productExists = await productModel.findById(cart[i].product);
+            const articleExists = await articleModel.findById(cart[i].article);
 
-            let getPrice = await productModel.findById(cart[i].product).select("price").exec();
-            if (!getPrice) {
-                return res.status(404).json({ message: `Product not found for ID: ${cart[i].product}` });
+            if (productExists) {
+                // Handle Product
+                object.product = cart[i].product;
+                object.count = cart[i].count;
+                object.price = productExists.price;
+            } else if (articleExists) {
+                // Handle Article
+                object.article = cart[i].article;
+                object.count = cart[i].count;
+                object.price = articleExists.price;
+            } else {
+                return res.status(400).json({ message: `Invalid ID for cart item: ${cart[i].product || cart[i].article}` });
             }
 
-            object.price = getPrice.price;
-            products.push(object);
+            cartItems.push(object);
         }
 
         let cartTotal = 0;
-        for (let i = 0; i < products.length; i++) {
-            cartTotal += products[i].price * products[i].count;
+        for (let i = 0; i < cartItems.length; i++) {
+            cartTotal += cartItems[i].price * cartItems[i].count;
         }
 
         let newCart = await new Cart({
-            products,
+            items: cartItems,
             cartTotal,
             orderby: user?.id,
         }).save();
 
         res.json(newCart);
     } catch (error) {
-        console.log("error", error.message)
+        console.log("error", error.message);
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
 
 //getUserCart
 
 const getUserCart = asyncHandler(async (req, res) => {
     const { id } = req.user;
+
     try {
-        const cart = await Cart.findOne({ orderby: id }).populate(
-            "products.product"
-        );
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const cart = await Cart.findOne({ orderby: user._id })
+            .populate('items.product')
+            .populate('items.article');
 
         if (!cart) {
-            return res.status(400).send("No Cart")
+            return res.status(404).json({ message: "Cart not found" });
         }
-        return res.status(200).send(cart);
+
+        res.status(200).json(cart);
     } catch (error) {
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 
+
 //   empty cart
 const emptyCart = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    const { productIds } = req.body;
+    const { itemsToRemove } = req.body;
 
     try {
         const user = await User.findById(id);
@@ -298,18 +402,32 @@ const emptyCart = asyncHandler(async (req, res) => {
         }
 
         const cart = await Cart.findOne({ orderby: user._id });
+        console.log("cart", cart);
 
         if (!cart) {
             return res.status(404).json({ message: "Cart not found" });
         }
 
-        cart.products = cart.products.filter(product => !productIds.includes(product.product.toString()));
+        // Filter out the items to remove from the cart
+        cart.items = cart.items.filter(item => {
+            return !itemsToRemove.some(removalItem =>
+                (removalItem.type === 'product' && removalItem.id === item.product?.toString()) ||
+                (removalItem.type === 'article' && removalItem.id === item.article?.toString())
+            );
+        });
 
-        cart.cartTotal = cart.products.reduce((acc, item) => acc + item.price * item.count, 0);
+        // If the cart is empty after removal, delete it from the database
+        if (cart.items.length === 0) {
+            await Cart.findByIdAndDelete(cart._id);
+            return res.status(200).json({ message: "Cart is empty and has been deleted" });
+        }
+
+        // Recalculate the cart total if there are items left
+        cart.cartTotal = cart.items.reduce((acc, item) => acc + item.price * item.count, 0);
 
         await cart.save();
 
-        res.status(200).json({ message: "Selected products have been removed from your cart", cart });
+        res.status(200).json({ message: "Selected items have been removed from your cart", cart });
     } catch (error) {
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
@@ -319,6 +437,7 @@ const emptyCart = asyncHandler(async (req, res) => {
 // order create
 const createOrder = asyncHandler(async (req, res) => {
     const { id } = req.user;
+    console.log("id", id)
     try {
         const user = await User.findById(id);
         let userCart = await Cart.findOne({ orderby: user._id });
@@ -347,8 +466,10 @@ const createOrder = asyncHandler(async (req, res) => {
             };
         });
         const updated = await productModel.bulkWrite(update, {});
+        console.log("newOrder", newOrder)
         res.json({ message: "success" });
     } catch (error) {
+        console.log("error", error)
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
@@ -356,17 +477,33 @@ const createOrder = asyncHandler(async (req, res) => {
 
 //get orders
 const getOrders = asyncHandler(async (req, res) => {
-    const { id } = req.user;
+    const { id } = req.user; // Logged-in user's ID
+
     try {
-        const userorders = await Order.findOne({ orderby: id })
+
+        const userorders = await Order.find({})
             .populate("products.product")
             .populate("orderby", ["_id", "name", "email"])
             .exec();
-        res.json(userorders);
+
+
+        const filteredOrders = userorders.filter(order => order.orderby._id.toString() === id);
+        console.log("filterOrdertesting", filteredOrders)
+
+        if (filteredOrders.length === 0) {
+            return res.status(404).json({ message: 'Order Not Found' });
+        }
+
+
+        res.json(filteredOrders);
     } catch (error) {
+        console.log("error", error);
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
+
+
 
 const getOrderByUserId = asyncHandler(async (req, res) => {
     const { id } = req.params;

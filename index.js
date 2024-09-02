@@ -1,4 +1,3 @@
-require("dotenv").config({ path: ".env" });
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,7 +7,10 @@ const morgan = require("morgan");
 const cors = require("cors");
 const passport = require('passport');
 const session = require('express-session');
+const dotenv = require('dotenv');
+const path = require("path")
 
+dotenv.config();
 
 // Initialize Passport.js
 require("./config/pasport");
@@ -18,6 +20,7 @@ require("./config/pasport");
 const UserRoute = require("./Routes/Auth");
 const ProductRoute = require("./Routes/ProductRoute");
 const CategoryRoute = require("./Routes/CategoryRoute");
+const ArticleRoute = require("./Routes/ArticleRoute");
 
 app.use(session({
     secret: '123456789abcdefghijklmnop', // Replace with your own secret
@@ -36,12 +39,17 @@ app.use(cors());
 app.use("*", cors());
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(
+    "/images/",
+    express.static(path.resolve(__dirname, "public", "images"))
+);
 
 
 // routes middleware calling here
 app.use("/app/v1", UserRoute);
 app.use("/app/v1", ProductRoute);
 app.use("/app/v1", CategoryRoute);
+app.use("/app/v1", ArticleRoute);
 
 
 
@@ -53,9 +61,9 @@ app.use((req, res) => {
 
 
 
-mongoose.connect(process.env.MONGODB).then((res) => {
-    console.log("Database Connected")
-}).catch((err) => console.log(err))
+mongoose.connect(process.env.MONGODB).then(() => {
+    console.log("Database Connected");
+}).catch((err) => console.log(err));
 
 
 

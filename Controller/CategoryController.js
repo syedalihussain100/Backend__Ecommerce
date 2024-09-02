@@ -9,7 +9,7 @@ const createCategory = asyncHandler(async (req, res) => {
         const newCategory = await productCategoryModel.create(req.body);
         res.json(newCategory);
     } catch (error) {
-        throw new Error(error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 
@@ -23,7 +23,7 @@ const updateCategory = asyncHandler(async (req, res) => {
         });
         res.json(updatedCategory);
     } catch (error) {
-        throw new Error(error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 
@@ -36,7 +36,7 @@ const deleteCategory = asyncHandler(async (req, res) => {
         const deletedCategory = await productCategoryModel.findByIdAndDelete(id);
         res.json(deletedCategory);
     } catch (error) {
-        throw new Error(error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 
@@ -49,7 +49,7 @@ const getCategory = asyncHandler(async (req, res) => {
         const getaCategory = await productCategoryModel.findById(id);
         res.json(getaCategory);
     } catch (error) {
-        throw new Error(error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 
@@ -62,7 +62,7 @@ const getallCategory = asyncHandler(async (req, res) => {
         const getallCategory = await productCategoryModel.find();
         res.json(getallCategory);
     } catch (error) {
-        throw new Error(error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
 module.exports = {
