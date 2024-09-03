@@ -390,21 +390,65 @@ const emptyCart = asyncHandler(async (req, res) => {
 
 
 // order create
+// const createOrder = asyncHandler(async (req, res) => {
+//     const { id } = req.user;
+//     console.log("id", id)
+//     try {
+//         const user = await User.findById(id);
+//         let userCart = await Cart.findOne({ orderby: user._id });
+//         let finalAmout = 0;
+//         finalAmout = userCart.cartTotal;
+
+//         let newOrder = await new Order({
+//             products: userCart.products,
+//             paymentIntent: {
+//                 id: uniqid(),
+//                 method: "COD",
+//                 amount: finalAmout,
+//                 status: "Cash on Delivery",
+//                 created: Date.now(),
+//                 currency: "usd",
+//             },
+//             orderby: user._id,
+//             orderStatus: "Cash on Delivery",
+//         }).save();
+//         let update = userCart.products.map((item) => {
+//             return {
+//                 updateOne: {
+//                     filter: { _id: item.product._id },
+//                     update: { $inc: { quantity: -item.count, sold: +item.count } },
+//                 },
+//             };
+//         });
+//         const updated = await productModel.bulkWrite(update, {});
+//         console.log("newOrder", newOrder)
+//         res.json({ message: "success" });
+//     } catch (error) {
+//         console.log("error", error)
+//         res.status(500).json({ message: 'An unexpected error occurred' });
+//     }
+// });
+
 const createOrder = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    console.log("id", id)
+    console.log("id", id);
     try {
         const user = await User.findById(id);
         let userCart = await Cart.findOne({ orderby: user._id });
-        let finalAmout = 0;
-        finalAmout = userCart.cartTotal;
+
+        // Check if the cart exists and has items
+        if (!userCart || !userCart.items || userCart.items.length === 0) {
+            return res.status(400).json({ message: "No items in the cart" });
+        }
+
+        let finalAmount = userCart.cartTotal;
 
         let newOrder = await new Order({
-            products: userCart.products,
+            products: userCart.items, // Saving the items from the cart
             paymentIntent: {
                 id: uniqid(),
                 method: "COD",
-                amount: finalAmout,
+                amount: finalAmount,
                 status: "Cash on Delivery",
                 created: Date.now(),
                 currency: "usd",
@@ -412,22 +456,25 @@ const createOrder = asyncHandler(async (req, res) => {
             orderby: user._id,
             orderStatus: "Cash on Delivery",
         }).save();
-        let update = userCart.products.map((item) => {
+
+        let update = userCart.items.map((item) => {
             return {
                 updateOne: {
-                    filter: { _id: item.product._id },
+                    filter: { _id: item.product ? item.product._id : item.article._id },
                     update: { $inc: { quantity: -item.count, sold: +item.count } },
                 },
             };
         });
+
         const updated = await productModel.bulkWrite(update, {});
-        console.log("newOrder", newOrder)
+        console.log("newOrder", newOrder);
         res.json({ message: "success" });
     } catch (error) {
-        console.log("error", error)
+        console.log("error", error);
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
 
 
 //get orders
