@@ -15,10 +15,10 @@ router.route("/update-user").put(verifyToken, checkRole(['user', 'admin']), uplo
 router.route("/delete-user/:id").delete(verifyToken, checkRole(['user', 'admin']), deleteaUser);
 router.route("/user-details/:id").get(verifyToken, checkRole(['user', 'admin']), userDetailsCtl);
 router.route("/order").post(verifyToken, checkRole(['user', 'admin']), createOrder);
-router.route("/orders").get(verifyToken, checkRole(['user', 'admin']), getAllOrders);
+router.route("/orders").get(verifyToken, checkRole(['admin']), getAllOrders);
 router.route("/getorders").get(verifyToken, checkRole(['user', 'admin']), getOrders);
 router.route("/orderstatus/:id").put(verifyToken, checkRole(['admin']), updateOrderStatus);
-router.route("/order/:id").delete(verifyToken, checkRole(['user', 'admin']), deleteOrder);
+router.route("/order/:id").delete(verifyToken, checkRole(['admin']), deleteOrder);
 router.route("/cart").post(verifyToken, checkRole(['user', 'admin']), userCart);
 router.route("/cart").get(verifyToken, checkRole(['user', 'admin']), getUserCart);
 router.route("/cart").delete(verifyToken, checkRole(['user', 'admin']), emptyCart);
