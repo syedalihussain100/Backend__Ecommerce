@@ -510,30 +510,34 @@ const deleteOrder = asyncHandler(async (req, res) => {
 });
 
 // update order status
+
+
 const updateOrderStatus = asyncHandler(async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
 
     try {
-        // Find the order by ID
-        const order = await Order.findById(id);
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    orderStatus: status,
+                    'paymentIntent.status': status
+                }
+            },
+            { new: true } 
+        );
 
-        if (!order) {
+        if (!updatedOrder) {
             return res.status(404).json({ message: 'Order not found' });
         }
-
-        // Update the order status and payment intent status
-        order.orderStatus = status;
-        order.paymentIntent.status = status;
-
-        // Save the updated order
-        const updatedOrder = await order.save();
 
         res.status(200).json(updatedOrder);
     } catch (error) {
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
 
 
 module.exports = {
