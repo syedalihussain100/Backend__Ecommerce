@@ -11,7 +11,7 @@ module.exports = (req, res, next) => {
             try {
                 switch (err.code) {
                     case "LIMIT_INVALID_TYPE":
-                        throw new Error("Invalid file type! Only PNG and JPEG are allowed");
+                        throw new Error("Invalid file type! Only PNG and JPEG,JPG are allowed");
                     case "LIMIT_FILE_SIZE":
                         throw new Error("File size is too large! Max size is 2MB per image");
                     default:
