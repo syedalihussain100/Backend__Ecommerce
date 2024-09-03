@@ -183,10 +183,10 @@ const updatedUser = asyncHandler(async (req, res) => {
                     }
                 );
 
-                stream.end(file.buffer); 
+                stream.end(file.buffer);
             });
 
-            imageUrl = result.secure_url; 
+            imageUrl = result.secure_url;
         }
 
         if (!name) {
@@ -209,7 +209,7 @@ const updatedUser = asyncHandler(async (req, res) => {
 
         res.status(200).json({ message: "User has been updated", user: updatedUser });
     } catch (error) {
-        console.log("error",error.message)
+        console.log("error", error.message)
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
@@ -390,48 +390,9 @@ const emptyCart = asyncHandler(async (req, res) => {
 
 
 // order create
-// const createOrder = asyncHandler(async (req, res) => {
-//     const { id } = req.user;
-//     console.log("id", id)
-//     try {
-//         const user = await User.findById(id);
-//         let userCart = await Cart.findOne({ orderby: user._id });
-//         let finalAmout = 0;
-//         finalAmout = userCart.cartTotal;
-
-//         let newOrder = await new Order({
-//             products: userCart.products,
-//             paymentIntent: {
-//                 id: uniqid(),
-//                 method: "COD",
-//                 amount: finalAmout,
-//                 status: "Cash on Delivery",
-//                 created: Date.now(),
-//                 currency: "usd",
-//             },
-//             orderby: user._id,
-//             orderStatus: "Cash on Delivery",
-//         }).save();
-//         let update = userCart.products.map((item) => {
-//             return {
-//                 updateOne: {
-//                     filter: { _id: item.product._id },
-//                     update: { $inc: { quantity: -item.count, sold: +item.count } },
-//                 },
-//             };
-//         });
-//         const updated = await productModel.bulkWrite(update, {});
-//         console.log("newOrder", newOrder)
-//         res.json({ message: "success" });
-//     } catch (error) {
-//         console.log("error", error)
-//         res.status(500).json({ message: 'An unexpected error occurred' });
-//     }
-// });
 
 const createOrder = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    console.log("id", id);
     try {
         const user = await User.findById(id);
         let userCart = await Cart.findOne({ orderby: user._id });
@@ -442,7 +403,6 @@ const createOrder = asyncHandler(async (req, res) => {
         }
 
         let finalAmount = userCart.cartTotal;
-
         let newOrder = await new Order({
             products: userCart.items, // Saving the items from the cart
             paymentIntent: {
@@ -476,7 +436,6 @@ const createOrder = asyncHandler(async (req, res) => {
 });
 
 
-
 //get orders
 const getOrders = asyncHandler(async (req, res) => {
     const { id } = req.user; // Logged-in user's ID
@@ -485,6 +444,7 @@ const getOrders = asyncHandler(async (req, res) => {
 
         const userorders = await Order.find({})
             .populate("products.product")
+            .populate("products.article")
             .populate("orderby", ["_id", "name", "email"])
             .exec();
 

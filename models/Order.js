@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"); 
+const mongoose = require("mongoose");
 
 var orderSchema = new mongoose.Schema(
   {
@@ -7,6 +7,10 @@ var orderSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
+        },
+        article: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "ARTICLE",
         },
         count: Number,
         price: Number
