@@ -33,8 +33,17 @@ const createArticle = asyncHandler(async (req, res) => {
             // console.log("cloud upload", result); // Log the result object
         }
 
-        if (req.body.title) {
-            req.body.slug = slugify(req.body.title);
+
+        const { title, description, price, category, quantity } = req.body;
+        if (!title || !description || !price || !category || !quantity) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        const slug = slugify(title);
+
+        const existingProduct = await articleModel.findOne({ slug });
+        if (existingProduct) {
+            return res.status(400).json({ message: 'Article with this title already exists' });
         }
 
         const newProduct = await articleModel({

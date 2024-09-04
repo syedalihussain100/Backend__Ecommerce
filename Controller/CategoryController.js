@@ -6,12 +6,29 @@ const { productCategoryModel } = require("../models/Category");
 
 const createCategory = asyncHandler(async (req, res) => {
     try {
+        // Extract the title from the request body
+        const { title } = req.body;
+
+        // Check if the title is provided
+        if (!title) {
+            return res.status(400).json({ message: 'Title is required' });
+        }
+
+        // Check if a category with the same title already exists
+        const existingCategory = await productCategoryModel.findOne({ title });
+        if (existingCategory) {
+            return res.status(400).json({ message: 'Category with this title already exists' });
+        }
+
+        // Create the new category
         const newCategory = await productCategoryModel.create(req.body);
-        res.json(newCategory);
+        res.status(201).json(newCategory); // Status 201 for resource creation
     } catch (error) {
+        console.error('Error creating category:', error);
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
+
 
 // update category
 
