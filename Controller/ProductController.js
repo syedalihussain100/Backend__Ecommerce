@@ -31,9 +31,22 @@ const createProduct = asyncHandler(async (req, res) => {
             }
         }
 
-        if (req.body.title) {
-            req.body.slug = slugify(req.body.title);
+        const { title, description, price, category, quantity } = req.body;
+        if (!title || !description || !price || !category || !quantity) {
+            return res.status(400).json({ message: 'Missing required fields' });
         }
+
+        // if (req.body.title) {
+        //     req.body.slug = slugify(req.body.title);
+        // }
+
+         
+         const slug = slugify(title);
+
+         const existingProduct = await productModel.findOne({ slug });
+         if (existingProduct) {
+             return res.status(400).json({ message: 'Product with this title already exists' });
+         }
 
         const newProduct = await productModel({
             title: req.body.title,
@@ -51,7 +64,6 @@ const createProduct = asyncHandler(async (req, res) => {
 
         res.status(200).json(newProduct);
     } catch (error) {
-        console.log("Error creating product:", error.message);
         res.status(500).json({ message: 'An unexpected error occurred' });
     }
 });
