@@ -21,6 +21,7 @@ const UserRoute = require("./Routes/Auth");
 const ProductRoute = require("./Routes/ProductRoute");
 const CategoryRoute = require("./Routes/CategoryRoute");
 const ArticleRoute = require("./Routes/ArticleRoute");
+const ContactRoute = require("./Routes/ContactRoute");
 
 app.use(session({
     secret: '123456789abcdefghijklmnop', // Replace with your own secret
@@ -50,6 +51,7 @@ app.use("/app/v1", UserRoute);
 app.use("/app/v1", ProductRoute);
 app.use("/app/v1", CategoryRoute);
 app.use("/app/v1", ArticleRoute);
+app.use("/app/v1", ContactRoute);
 
 
 app.get("/",(req,res)=>{
