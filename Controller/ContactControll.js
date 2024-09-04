@@ -5,11 +5,6 @@ const { contactModel } = require("../models/Contact");
 const createContact = asyncHandler(async (req, res) => {
     const { name, subject, email, message } = req.body;
 
-    // Check if all required fields are provided
-    if (!name || !subject || !email || !message) {
-        res.status(400);
-        throw new Error('All fields are required');
-    }
 
     const contact = await contactModel({
         name,
