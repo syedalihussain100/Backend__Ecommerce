@@ -11,7 +11,7 @@ const createContact = asyncHandler(async (req, res) => {
         throw new Error('All fields are required');
     }
 
-    const contact = await contactModel.create({
+    const contact = await contactModel({
         name,
         subject,
         email,
