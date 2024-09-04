@@ -13,6 +13,8 @@ const createContact = asyncHandler(async (req, res) => {
         message
     });
 
+    await contact.save();
+
     res.status(201).json(contact);
 });
 
