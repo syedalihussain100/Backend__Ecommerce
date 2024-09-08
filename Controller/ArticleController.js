@@ -54,6 +54,7 @@ const createArticle = asyncHandler(async (req, res) => {
             category: req.body.category,
             quantity: req.body.quantity,
             image: imageUrl || "",
+            link: req.body.link,
             tags: req.body.tags
         })
 

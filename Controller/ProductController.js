@@ -40,13 +40,13 @@ const createProduct = asyncHandler(async (req, res) => {
         //     req.body.slug = slugify(req.body.title);
         // }
 
-         
-         const slug = slugify(title);
 
-         const existingProduct = await productModel.findOne({ slug });
-         if (existingProduct) {
-             return res.status(400).json({ message: 'Product with this title already exists' });
-         }
+        const slug = slugify(title);
+
+        const existingProduct = await productModel.findOne({ slug });
+        if (existingProduct) {
+            return res.status(400).json({ message: 'Product with this title already exists' });
+        }
 
         const newProduct = await productModel({
             title: req.body.title,
@@ -56,6 +56,7 @@ const createProduct = asyncHandler(async (req, res) => {
             category: req.body.category,
             quantity: req.body.quantity,
             images: urls,
+            link: req.body.link,
             tags: req.body.tags,
             information: req.body.information // Ensure this is included
         });

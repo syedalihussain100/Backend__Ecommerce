@@ -32,6 +32,10 @@ var articleSchema = new mongoose.Schema(
         image: {
             type: String,
         },
+        link: {
+            type: String,
+            required: true
+        },
         tags: [],
         ratings: [
             {
