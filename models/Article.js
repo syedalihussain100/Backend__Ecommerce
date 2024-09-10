@@ -13,6 +13,9 @@ var articleSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
         },
+        sku: {
+            type: String,
+        },
         description: {
             type: String,
         },
@@ -21,7 +24,7 @@ var articleSchema = new mongoose.Schema(
             required: true,
         },
         category: [],
-        color:[],
+        color: [],
         quantity: {
             type: Number,
             required: true,

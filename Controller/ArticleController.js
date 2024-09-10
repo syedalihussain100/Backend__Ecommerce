@@ -2,6 +2,7 @@ const { articleModel } = require("../models/Article");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const cloudinary = require("cloudinary").v2;
+const { ArticleCategoryModel } = require("../models/ArticleCategory");
 
 const fs = require("fs");
 
@@ -35,7 +36,7 @@ const createArticle = asyncHandler(async (req, res) => {
 
 
         const { title, price, category, quantity } = req.body;
-        if (!title  || !price || !category || !quantity) {
+        if (!title || !price || !category || !quantity) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -56,7 +57,8 @@ const createArticle = asyncHandler(async (req, res) => {
             image: imageUrl || "",
             link: req.body.link,
             tags: req.body.tags,
-            color: req.body.color
+            color: req.body.color,
+            sku: req.body.sku,
         })
 
         await newProduct.save();
@@ -234,4 +236,32 @@ const rating = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { createArticle, GetAllArticle, IdArticle, deleteArticle, updateArticle, rating }
+
+// article category
+
+const createCategory = asyncHandler(async (req, res) => {
+    try {
+        // Extract the title from the request body
+        const { title } = req.body;
+
+        // Check if the title is provided
+        if (!title) {
+            return res.status(400).json({ message: 'Title is required' });
+        }
+
+        // Check if a category with the same title already exists
+        const existingCategory = await ArticleCategoryModel.findOne({ title });
+        if (existingCategory) {
+            return res.status(400).json({ message: 'Category with this title already exists' });
+        }
+
+        // Create the new category
+        const newCategory = await ArticleCategoryModel.create(req.body);
+        res.status(201).json(newCategory); // Status 201 for resource creation
+    } catch (error) {
+        console.error('Error creating category:', error);
+        res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+});
+
+module.exports = { createArticle, GetAllArticle, IdArticle, deleteArticle, updateArticle, rating, createCategory }
