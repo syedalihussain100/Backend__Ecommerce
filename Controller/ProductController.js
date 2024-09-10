@@ -58,7 +58,8 @@ const createProduct = asyncHandler(async (req, res) => {
             images: urls,
             link: req.body.link,
             tags: req.body.tags,
-            information: req.body.information // Ensure this is included
+            information: req.body.information,
+            color: req.body.color
         });
 
         await newProduct.save();

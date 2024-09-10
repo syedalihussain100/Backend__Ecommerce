@@ -55,7 +55,8 @@ const createArticle = asyncHandler(async (req, res) => {
             quantity: req.body.quantity,
             image: imageUrl || "",
             link: req.body.link,
-            tags: req.body.tags
+            tags: req.body.tags,
+            color: req.body.color
         })
 
         await newProduct.save();
