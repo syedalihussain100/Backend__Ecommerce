@@ -264,4 +264,26 @@ const createCategory = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { createArticle, GetAllArticle, IdArticle, deleteArticle, updateArticle, rating, createCategory }
+
+const getallCategory = asyncHandler(async (req, res) => {
+    try {
+        const getallCategory = await ArticleCategoryModel.find();
+        res.json(getallCategory);
+    } catch (error) {
+        res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+});
+
+
+
+const getCategory = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        const getaCategory = await ArticleCategoryModel.findById(id);
+        res.json(getaCategory);
+    } catch (error) {
+        res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+});
+
+module.exports = { createArticle, GetAllArticle, IdArticle, deleteArticle, updateArticle, rating, createCategory, getallCategory, getCategory }
