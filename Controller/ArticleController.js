@@ -34,8 +34,8 @@ const createArticle = asyncHandler(async (req, res) => {
         }
 
 
-        const { title, description, price, category, quantity } = req.body;
-        if (!title || !description || !price || !category || !quantity) {
+        const { title, price, category, quantity } = req.body;
+        if (!title  || !price || !category || !quantity) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
