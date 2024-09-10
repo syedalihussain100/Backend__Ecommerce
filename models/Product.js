@@ -21,6 +21,7 @@ var productSchema = new mongoose.Schema(
             required: true,
         },
         category: [],
+        color:[],
         information: {
             type: String,
             required: true

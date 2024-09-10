@@ -21,6 +21,7 @@ var articleSchema = new mongoose.Schema(
             required: true,
         },
         category: [],
+        color:[],
         quantity: {
             type: Number,
             required: true,
