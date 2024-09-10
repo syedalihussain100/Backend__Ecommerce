@@ -21,10 +21,7 @@ var articleSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        category: {
-            type: String,
-            required: true,
-        },
+        category: [],
         quantity: {
             type: Number,
             required: true,
