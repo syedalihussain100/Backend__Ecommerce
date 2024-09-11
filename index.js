@@ -38,6 +38,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors());
 app.use("*", cors());
+app.use(
+    cors({
+        origin: ["http://localhost:3000", "https://backend-ecommerce-3b0p.onrender.com"],
+        credentials: true
+    })
+)
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(
@@ -54,7 +60,7 @@ app.use("/app/v1", ArticleRoute);
 app.use("/app/v1", ContactRoute);
 
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
     res.status(200).send("Backend Data")
 })
 
