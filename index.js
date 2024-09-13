@@ -22,6 +22,8 @@ const ProductRoute = require("./Routes/ProductRoute");
 const CategoryRoute = require("./Routes/CategoryRoute");
 const ArticleRoute = require("./Routes/ArticleRoute");
 const ContactRoute = require("./Routes/ContactRoute");
+const LiveRoute = require("./Routes/LiveRoute");
+
 
 app.use(session({
     secret: '123456789abcdefghijklmnop', // Replace with your own secret
@@ -58,6 +60,7 @@ app.use("/app/v1", ProductRoute);
 app.use("/app/v1", CategoryRoute);
 app.use("/app/v1", ArticleRoute);
 app.use("/app/v1", ContactRoute);
+app.use("/app/v1", LiveRoute);
 
 
 app.get("/", (req, res) => {
