@@ -20,11 +20,8 @@ var productSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        category: {
-            type: String,
-            required: true
-        },
-        color: [],
+        category: [],
+        color:[],
         information: {
             type: String,
             required: true
