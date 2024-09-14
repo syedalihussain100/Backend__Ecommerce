@@ -23,7 +23,10 @@ var articleSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        category: [],
+        category: {
+            type: String,
+            required: true
+        },
         color: [],
         quantity: {
             type: Number,
